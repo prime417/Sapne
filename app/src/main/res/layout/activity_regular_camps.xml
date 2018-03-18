@@ -8,6 +8,12 @@
 
 <include layout="@layout/content_regular1"/>
 
+<<<<<<< HEAD
+=======
+    <include layout="@layout/content_regular1" />
+
+
+>>>>>>> 61d79e8b1c8cf49873681a2bfd9753e6f2003f9b
 </LinearLayout>
 
 

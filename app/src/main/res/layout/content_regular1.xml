@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+<<<<<<< HEAD
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.intents.sapne.ngo.example.intents.sapne.RegularCamps"
@@ -27,5 +28,31 @@
 
         </android.support.v7.widget.RecyclerView>
 
+=======
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.example.intents.sapne.ngo.example.intents.sapne.RegularCamps"
+    tools:showIn="@layout/activity_regular_camps"
+    android:orientation="vertical">
+   
+     <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:fontFamily="serif"
+            android:text="EXPLORE THE WORLD WITH US"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:textColor="@color/colorPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    
+        <android.support.v7.widget.RecyclerView
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/recyclerView1">
+
+        </android.support.v7.widget.RecyclerView>
+>>>>>>> 61d79e8b1c8cf49873681a2bfd9753e6f2003f9b
 
 </LinearLayout>

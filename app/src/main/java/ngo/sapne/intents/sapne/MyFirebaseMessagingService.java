@@ -1,23 +1,52 @@
 package ngo.sapne.intents.sapne;
 
-import android.util.Log;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.support.v4.app.NotificationCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 /**
- * Created by DHANESH on 27-11-2017.
+ * Created by Naruto on 2/5/2018.
  */
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
-    private static final String TAG = "FCM Service";
+      String x,y;
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        // TODO: Handle FCM messages here.
-        // If the application is in the foreground handle both data and notification messages here.
-        // Also if you intend on generating your own notifications as a result of a received FCM
-        // message, here is where that should be initiated.
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
-        Log.d(TAG, "Notification Message Body: " + remoteMessage.getNotification().getBody());
+        x = remoteMessage.getNotification().getBody();
+        y= remoteMessage.getNotification().getTitle();
+        Intent intent = new Intent(this, NotificationList.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pi =  PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_ONE_SHOT);
+        NotificationCompat.Builder notif = new NotificationCompat.Builder(this);
+        notif.setContentText("FCM Notification");
+        notif.setContentText(x);
+        notif.setAutoCancel(true);
+        notif.setSmallIcon(R.mipmap.ic_launcher);
+        notif.setContentIntent(pi);
+        NotificationManager notificationManager =(NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(0,notif.build());
+
+
+
+        saveNotification();
+    }
+
+    private void saveNotification() {
+        SharedPreferences sharedPref = getSharedPreferences("notification1",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        int count = sharedPref.getInt("key" , 0);
+        count++;
+        editor.putString("notify"+count,x);
+        editor.putString("notify3"+count,y);
+        editor.putInt("key",count);
+        editor.apply();
+
+
     }
 }
