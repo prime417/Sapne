@@ -104,7 +104,7 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                             //start the profile activity
                             getActivity().getSupportFragmentManager().
                                     beginTransaction().
-                                    replace(R.id.content_frame, new Registration(), "Registration")
+                                    replace(R.id.content_frame, new ProfileFragment(), "ProfileUser")
                                     .commit();
                         }
                     }
@@ -124,5 +124,11 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
                     replace(R.id.content_frame, new RegisterUser(), "RegisterUser")
                     .commit();
         }
+
+
+
     }
+
+
+
 }

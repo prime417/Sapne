@@ -15,18 +15,25 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.net.URI;
 import java.util.ArrayList;
 
 import static android.app.Activity.RESULT_OK;
@@ -39,32 +46,35 @@ public class Registration extends Fragment {
 
     final ArrayList<String> joinusas = new ArrayList<>();
     EditText name, email, dob, edu, phn;
-    String name1, email1, dob1, edu1, post1, phn1;
-    Button register;
+    String name1, email1, dob1, edu1, post1, phn1 ;
+    Button GoToProf;
     int PICK_IMAGE_REQUEST = 111;
     Button uplod;
+
     TextView t1;
+    ImageView prof;
     Uri filePath;
+    public static Uri profileImageUrl;
     ProgressDialog pd;
     Spinner spnJoin;
     FirebaseStorage
             storage = FirebaseStorage.getInstance();
     StorageReference storageRef = storage.getReferenceFromUrl("gs://sapne-241cc.appspot.com/");    //change the url according to your firebase app
     private DatabaseReference mDatabase;
-
+    FirebaseAuth mAuth;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_signup, container, false);
 
         name = (EditText) view.findViewById(R.id.input_name);
-        email = (EditText) view.findViewById(R.id.input_email);
         dob = (EditText) view.findViewById(R.id.dob);
         edu = (EditText) view.findViewById(R.id.edu);
         phn = (EditText) view.findViewById(R.id.phn);
         spnJoin = (Spinner) view.findViewById(R.id.spnJoin);
-
-        register = (Button) view.findViewById(R.id.btn_regi);
+        prof = view.findViewById(R.id.iv7);
+        GoToProf = (Button) view.findViewById(R.id.btn_regi);
+        t1= view.findViewById(R.id.tv77);
         uplod = (Button) view.findViewById(R.id.bws);
 
         joinusas.add("Intern");
@@ -74,7 +84,6 @@ public class Registration extends Fragment {
 
         spnJoin.setAdapter(adapter);
 
-        t1 = (TextView) getActivity().findViewById(R.id.t1);
 
         return view;
     }
@@ -84,70 +93,62 @@ public class Registration extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         mDatabase = FirebaseDatabase.getInstance().getReference("users"); //Dont pass any path if you want root of the tree
-        register.setOnClickListener(new View.OnClickListener() {
+        prof.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addUser();
+                showImageChooser();
+            }
+        });
+        GoToProf.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getActivity().getSupportFragmentManager().
+                        beginTransaction().
+                        replace(R.id.content_frame, new ProfileFragment() )
+                        .commit();
             }
         });
         uplod.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                uploadimage();
+                saveUserInfo();
             }
         });
     }
 
-    public void addUser() {
+    private void saveUserInfo() {
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user= mAuth.getCurrentUser();
 
-     /*   if(t1.getText().equals("Selected file"))
-        {
-            Toast.makeText(this,"Please select file",Toast.LENGTH_LONG).show();
-        }*/
+        if(user!=null) {
 
-        //t1.setText(filePath.toString());
-        if (filePath != null) {
 
-            StorageReference childRef = storageRef.child("image.jpg");
-
-            //uploading the image
-            UploadTask uploadTask = childRef.putFile(filePath);
-
-            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+               String displayName= name.getText().toString();
+            UserProfileChangeRequest profile = new UserProfileChangeRequest.Builder()
+                    .setDisplayName(displayName)
+                    .setPhotoUri(profileImageUrl)
+                    .build();
+            user.updateProfile(profile).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-                    name1 = name.getText().toString();
-                    email1 = email.getText().toString();
-                    dob1 = dob.getText().toString();
-                    edu1 = edu.getText().toString();
-                    post1 = joinusas.get(spnJoin.getSelectedItemPosition());
-                    phn1 = phn.getText().toString();
-                    String id = mDatabase.push().getKey();
-
-                    Users users = new Users(id, name1, email1, post1, dob1, edu1, phn1);
-                    mDatabase.child(id).setValue(users);
-
-                    Toast.makeText(getActivity(), "Upload successful", Toast.LENGTH_SHORT).show();
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    //pd.dismiss();
-                    Toast.makeText(getActivity(), "Upload Failed -> " + e, Toast.LENGTH_SHORT).show();
+                public void onComplete(@NonNull Task<Void> task) {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(getActivity(), "Profile Updated", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
-        } else {
-            Toast.makeText(getActivity(), "Select an image", Toast.LENGTH_SHORT).show();
         }
-
-        getActivity().getSupportFragmentManager().
-                beginTransaction().
-                replace(R.id.content_frame, new ProfileFragment(), "ProfileFragment")
-                .commit();
+        String name4 = name.getText().toString().toLowerCase();
+        dob1 = dob.getText().toString();
+        edu1 = edu.getText().toString();
+        post1 = joinusas.get(spnJoin.getSelectedItemPosition());
+        phn1 = phn.getText().toString();
+        email1= user.getEmail();
+        Users users= new Users(name1, email1, post1, dob1, edu1, phn1);
+        mDatabase.child(name4).setValue(users);
     }
 
-    public void uploadimage() {
+
+    public void showImageChooser() {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_PICK);
@@ -160,16 +161,33 @@ public class Registration extends Fragment {
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             filePath = data.getData();
-
+            t1.setVisibility(View.INVISIBLE);
             try {
                 //getting image from gallery
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), filePath);
-
-                bitmap.getByteCount();
+                prof.setImageBitmap(bitmap);
+                uploadImageToFirebase();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-}
 
+    private void uploadImageToFirebase() {
+        StorageReference profileImageReference = FirebaseStorage.getInstance().getReference("profilepics/ " + System.currentTimeMillis() + ".jpg");
+
+        if(filePath!=null){
+            profileImageReference.putFile(filePath).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    profileImageUrl = taskSnapshot.getDownloadUrl();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getActivity() ,e.getMessage(),Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+}
